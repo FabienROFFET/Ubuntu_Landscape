@@ -1,0 +1,47 @@
+########
+# 
+# Create Non-Prod / Prod Enviroment with Pull-Pocket to make possible to push new packages available in Non-Prod then in Prod. 
+#
+########
+
+RELEASE=focal
+
+landscape-api create-distribution ubuntu
+
+landscape-api create-series $RELEASE ubuntu  --pockets release,updates,security  --components main,restricted,universe,multiverse  --architectures amd64  --gpg-key mirror-key --mirror-uri http://archive.ubuntu.com/ubuntu/  --mirror-series $RELEASE
+
+landscape-api create-pocket --pull-pocket release release-nonprod $RELEASE ubuntu main,universe amd64 pull mirror-key
+landscape-api create-pocket --pull-pocket updates updates-nonprod $RELEASE ubuntu main,universe amd64 pull mirror-key
+landscape-api create-pocket --pull-pocket security security-nonprod $RELEASE ubuntu main,universe amd64 pull mirror-key
+landscape-api create-pocket --pull-pocket release-nonprod release-production $RELEASE ubuntu main,universe amd64 pull mirror-key
+landscape-api create-pocket --pull-pocket updates-nonprod updates-production $RELEASE ubuntu main,universe amd64 pull mirror-key
+landscape-api create-pocket --pull-pocket security-nonprod security-production $RELEASE ubuntu main,universe amd64 pull  mirror-key
+
+landscape-api create-repository-profile --description "stream" stream-profile
+landscape-api associate-repository-profile --tags stream stream-profile
+landscape-api create-repository-profile --description "Non-Prod" nonprod-profile
+landscape-api associate-repository-profile --tags nonprod nonprod-profile
+landscape-api create-repository-profile --description "Production" production-profile
+landscape-api associate-repository-profile --tags prod production-profile
+
+landscape-api add-pockets-to-repository-profile stream-profile release,updates,security $RELEASE ubuntu
+landscape-api add-pockets-to-repository-profile nonprod-profile release-nonprod,updates-nonprod,security-nonprod $RELEASE ubuntu
+landscape-api add-pockets-to-repository-profile production-profile release-production,updates-production,security-production $RELEASE ubuntu
+
+landscape-api sync-mirror-pocket release $RELEASE ubuntu
+landscape-api sync-mirror-pocket updates $RELEASE ubuntu
+landscape-api sync-mirror-pocket security $RELEASE ubuntu
+
+landscape-api pull-packages-to-pocket release-nonprod $RELEASE ubuntu
+landscape-api pull-packages-to-pocket security-nonprod $RELEASE ubuntu
+landscape-api pull-packages-to-pocket updates-nonprod $RELEASE ubuntu
+landscape-api pull-packages-to-pocket release-production $RELEASE ubuntu
+landscape-api pull-packages-to-pocket security-production $RELEASE ubuntu
+landscape-api pull-packages-to-pocket updates-production $RELEASE ubuntu
+
+landscape-api diff-pull-pocket release-nonprod $RELEASE ubuntu
+landscape-api diff-pull-pocket security-nonprod $RELEASE ubuntu
+landscape-api diff-pull-pocket updates-nonprod $RELEASE ubuntu
+landscape-api diff-pull-pocket release-production $RELEASE ubuntu
+landscape-api diff-pull-pocket security-production $RELEASE ubuntu
+landscape-api diff-pull-pocket updates-production $RELEASE ubuntu
