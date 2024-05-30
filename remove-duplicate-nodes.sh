@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Get the list of duplicate computer names
-duplicates=$(landscape-api get-computers | grep title | awk '{print $2}' | sort | uniq -d)
+duplicates=$(landscape-api get-computers | grep hostname | awk '{print $2}' | sort | uniq -d)
 
 # Loop through each duplicate computer name and remove it
 for name in $duplicates; do
